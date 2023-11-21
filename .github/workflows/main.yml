@@ -1,0 +1,37 @@
+name: CI/CD for iOS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build iOS App
+      run: npx react-native run-ios --configuration=Release
+
+    - name: Archive App
+      run: xcodebuild -workspace YourApp.xcworkspace -scheme YourApp -configuration Release -archivePath build/YourApp.xcarchive archive
+
+    - name: Export IPA
+      run: xcodebuild -exportArchive -archivePath build/YourApp.xcarchive -exportOptionsPlist exportOptions.plist -exportPath build
+
+    - name: Upload IPA
+      uses: actions/upload-artifact@v2
+      with:
+        name: ipa
+        path: build/*.ipa
